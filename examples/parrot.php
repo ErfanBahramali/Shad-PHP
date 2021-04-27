@@ -19,7 +19,7 @@ $account->onUpdate(function (array $update) use ($account) {
             $author_type = $messageContent['author_type'];
             $author_object_guid = $messageContent['author_object_guid'];
             if ($author_type == 'User' && $type == 'Text') {
-                $text = $messageContent['text'];
+                $text = (string)$messageContent['text'];
                 $account->sendMessage($author_object_guid, $text);
             }
         }
