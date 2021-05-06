@@ -78,5 +78,14 @@ $account->votePoll($poll_id, $selection_index);
 ## About Us
 This library can be used for easy interaction with Shad just like official applications.
 
+## Disclaimer
+
+
+<b>This library is free and can not be sold.</b>
+
+
+<b>The responsibility for using this library lies with the individual</b>
+
+
 ## License
 Shad-PHP is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
