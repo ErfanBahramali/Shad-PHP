@@ -31,11 +31,14 @@ class ShadPHP
      * check account and login
      * @param int $phoneNumber user phone number to login
      */
-    public function __construct(int $phoneNumber)
+    public function __construct(int $phoneNumber = null, string $configFile = null)
     {
-        $this->phoneNumber = $phoneNumber;
+        set_time_limit(0);
         $this->updateServerInfos();
+        if (!isset($phoneNumber)) return;
+        $this->phoneNumber = $phoneNumber;
         // $this->updateTexts();
+        if (isset($configFile)) $this->configFile = $configFile;
         $this->loadConfig();
         $response = $this->getUserInfo($this->user_guid);
         if (isset($response['status_det']) && $response['status'] == 'ERROR_ACTION' && $response['status_det'] == 'NOT_REGISTERED') {
