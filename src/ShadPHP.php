@@ -508,9 +508,12 @@ class ShadPHP
      * @param int $max_id max message id @example 76213478446577
      * @return array
      */
-    public function getMessages(string $object_guid, string $sort, string $filter_type, int $max_id)
+    public function getMessages(string $object_guid, string $sort = 'FromMax', string $filter_type = null, int $max_id = null)
     {
-        return $this->run('getMessages', ['object_guid' => $object_guid, 'sort' => $sort, 'filter_type' => $filter_type, 'max_id' => $max_id]);
+        $input = ['object_guid' => $object_guid, 'sort' => $sort];
+        if (isset($filter_type)) $input['filter_type'] = $filter_type;
+        if (isset($max_id)) $input['max_id'] = $max_id;
+        return $this->run('getMessages', $input);
     }
 
     /** 
