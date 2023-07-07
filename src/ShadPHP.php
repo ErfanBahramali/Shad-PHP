@@ -255,11 +255,15 @@ class ShadPHP
             'phone_number' => $this->phoneNumber,
             'send_type' => 'SMS'
         ], true);
+        if (isset($response['status']) && $response['status'] !== 'OK') {
+            print_r("Error: " . $response['status_det'] . PHP_EOL);
+            return false;
+        }
         $phone_code_hash = $response['data']['phone_code_hash'];
         $code_digits_count = $response['data']['code_digits_count'];
         $has_confirmed_recovery_email = $response['data']['has_confirmed_recovery_email'];
         getCode:
-        print_r('Please Enter Code:' . PHP_EOL);
+        echo 'Please Enter Code (+' . $this->phoneNumber . ') : ';
         $code = readline();
         if (is_numeric($code) && strlen($code) == $code_digits_count) {
             $response = $this->run('signIn', [
@@ -289,6 +293,8 @@ class ShadPHP
                 }
                 goto getCode;
             }
+        } else if ($code == '') {
+            die;
         } else {
             print_r("Code Is Invalid" . PHP_EOL);
             goto getCode;
