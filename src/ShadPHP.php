@@ -1,7 +1,9 @@
 <?php
 
 /**
- * https://github.com/ErfanBahramali/Shad-PHP 
+ * https://github.com/ErfanBahramali/Shad-PHP
+ * @Author: Erfan Bahramali (twitter.com/Erfan_Bahramali)
+ * @Developed: Nabi KaramAliZadeh (twitter.com/NabiKAZ) 
  */
 
 namespace ShadPHP;
@@ -22,7 +24,7 @@ class ShadPHP
     private $api_version = '5';
     private $auth;
     private $encryptKey;
-    private $user_guid;
+    public $user_guid;
     public $accountInfo;
 
     /** 
