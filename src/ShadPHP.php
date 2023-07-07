@@ -26,6 +26,10 @@ class ShadPHP
     private $encryptKey;
     public $user_guid;
     public $accountInfo;
+    public $chunkSize = 128 * 1024;
+    public $maxAttempts = 5;
+    public $sleep = 2;
+    public $debug = false;
 
     /** 
      * check account and login
@@ -602,5 +606,243 @@ class ShadPHP
     public function votePoll(string $poll_id, int $selection_index)
     {
         return $this->run('votePoll', ['poll_id' => $poll_id, 'selection_index' => $selection_index]);
+    }
+
+    /** 
+     * Upload File
+     * 
+     * @param string $object_guid The ID of the chat where you want the file to be uploaded.
+     * @param string $file_path The Path and file name in local storage.
+     * @param string $text (optional) The text for file
+     * @param callable $progress_cb (optional) A callback function to track the progress. params: done, total.
+     * @return array Request response
+     */
+    public function uploadFile(string $object_guid, string $file_path, string $text = '', callable $progress_cb = null)
+    {
+        if (!file_exists($file_path)) {
+            return ['status' => 'ERROR', 'status_det' => 'File not found.'];
+        }
+
+        $chunk_size = $this->chunkSize;
+        $max_attempts = $this->maxAttempts;
+        $sleep = $this->sleep;
+        $file_name = pathinfo($file_path, PATHINFO_BASENAME);
+        $file_size = filesize($file_path);
+        $file_mime = pathinfo($file_path, PATHINFO_EXTENSION);
+        $file_handle = fopen($file_path, "rb");
+        $total_parts = ceil($file_size / $chunk_size);
+
+        $result = $this->run('requestSendFile', ['file_name' => $file_name, 'size' => $file_size, 'mime' => $file_mime]);
+        if (!isset($result['status']) || $result['status'] !== "OK") {
+            return ['status' => 'ERROR', 'status_det' => 'Error during preparation.'];
+        }
+        $file_id = $result['data']['id'];
+        $dc_id = $result['data']['dc_id'];
+        $access_hash_send = $result['data']['access_hash_send'];
+        $upload_url = $result['data']['upload_url'];
+
+        for ($part_number = 1; $part_number <= $total_parts; $part_number++) {
+
+            $start = ($part_number - 1) * $chunk_size;
+            $end = min($start + $chunk_size, $file_size);
+
+            if ($this->debug) {
+                echo "$part_number / $total_parts  |   $start ~ $end\n";
+            }
+
+            $headers = [
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0',
+                'Accept: application/json, text/plain, */*',
+                'Accept-Language: en-US,en;q=0.5',
+                'Accept-Encoding: gzip, deflate, br',
+                'Referer: https://web.shad.ir/',
+                'Origin: https://web.shad.ir',
+                'Connection: keep-alive',
+                'Host: ' . parse_url($upload_url, PHP_URL_HOST),
+                'access-hash-send: ' . $access_hash_send,
+                'auth: ' . $this->auth,
+                'file-id: ' . $file_id,
+                'part-number: ' . $part_number,
+                'total-part: ' . $total_parts,
+                'chunk-size: ' . ($end - $start),
+                'Content-Length: ' . ($end - $start),
+            ];
+
+            $curl_options = [
+                CURLOPT_URL => $upload_url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => fread($file_handle, $end - $start),
+            ];
+
+            $ch = curl_init();
+            curl_setopt_array($ch, $curl_options);
+
+            $attempts = 0;
+            do {
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                if (isset($response)) {
+                    $response = json_decode($response, true);
+                }
+
+                if (isset($response['status']) && $response['status'] === 'OK') {
+                    break;
+                }
+
+                $attempts++;
+
+                if ($attempts <= $max_attempts) {
+                    echo 'Waiting ' . $sleep . ' seconds... Retry ' . $attempts . '/' . $max_attempts . "\n";
+                    sleep($sleep);
+                }
+            } while ($attempts <= $max_attempts);
+
+            if (!isset($response['status']) || $response['status'] !== 'OK') {
+                return ['status' => 'ERROR', 'status_det' => 'Connection error.'];
+            }
+
+            if (is_callable($progress_cb)) {
+                $progress_cb($end, $file_size);
+            }
+        }
+
+        fclose($file_handle);
+
+        if (!isset($response['status']) || $response['status'] !== 'OK' || !isset($response['data']['access_hash_rec'])) {
+            return ['status' => 'ERROR', 'status_det' => 'Access code not received.'];
+        }
+
+        $access_hash_rec = $response['data']['access_hash_rec'];
+
+        $data = [
+            'object_guid' => $object_guid,
+            'rnd' => mt_rand(100000, 999999),
+            'text' => $text,
+            'file_inline' => [
+                "dc_id" => $dc_id,
+                "file_id" =>  $file_id,
+                "type" => "File",
+                "file_name" =>  $file_name,
+                "size" => $file_size,
+                "mime" => $file_mime,
+                "access_hash_rec" =>  $access_hash_rec,
+            ]
+        ];
+        return $this->run('sendMessage', $data);
+    }
+
+    /** 
+     * Download File
+     * You don't need to login and enter all the parameters to download!
+     * Only these items in the $file_inline array are required: access_hash_rec, dc_id, size
+     * 
+     * @param array $file_inline File specification array including file_id, dc_id, access_hash_rec, etc...
+     * @param string $save_file (optional) The name of the file you want to save.
+     * @param bool $overwrite (optional) Overwrite status on the file.
+     * @param callable $progress_cb (optional) A callback function to track the progress. params: done, total.
+     * @return array Request response
+     */
+    public function downloadFile(array $file_inline, string $save_file = '', $overwrite = true, callable $progress_cb = null)
+    {
+        if (!isset($this->serverInfos['storages'])) {
+            return ['status' => 'ERROR', 'status_det' => 'File storages not found.'];
+        }
+        $storages = $this->serverInfos['storages'];
+
+        $chunk_size = $this->chunkSize;
+        $max_attempts = $this->maxAttempts;
+        $sleep = $this->sleep;
+        $file_id = isset($file_inline['file_id']) ? $file_inline['file_id'] : '1';
+        $file_mime = isset($file_inline['mime']) ? $file_inline['mime'] : '';
+        $dc_id = $file_inline['dc_id'];
+        $access_hash_rec = $file_inline['access_hash_rec'];
+        $file_name = $save_file ? $save_file : (isset($file_inline['file_name']) ? $file_inline['file_name'] : $access_hash_rec . ($file_mime ? '.' . $file_mime : ''));
+        $file_size = $file_inline['size'];
+        $file_type = isset($file_inline['type']) ? $file_inline['type'] : '';
+        $total_parts = ceil($file_size / $chunk_size);
+        $download_url = $storages[$dc_id];
+
+        if (!isset($download_url) || !$download_url) {
+            return ['status' => 'ERROR', 'status_det' => 'Storage not found.'];
+        }
+
+        if (!$overwrite && file_exists($file_name)) {
+            return ['status' => 'ERROR', 'status_det' => 'The file exists.'];
+        }
+        $file_handle = fopen($file_name, 'w');
+
+        for ($part_number = 1; $part_number <= $total_parts; $part_number++) {
+
+            $start = ($part_number - 1) * $chunk_size;
+            $end = min($start + $chunk_size, $file_size);
+
+            if ($this->debug) {
+                echo "$part_number / $total_parts  |   $start ~ $end\n";
+            }
+
+            $headers = [
+                'User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0',
+                'Accept: application/json, text/plain, */*',
+                'Accept-Language: en-US,en;q=0.5',
+                'Accept-Encoding: gzip, deflate, br',
+                'Referer: https://web.shad.ir/',
+                'Origin: https://web.shad.ir',
+                'Connection: keep-alive',
+                'Host: ' . parse_url($download_url, PHP_URL_HOST),
+                'access-hash-rec: ' . $access_hash_rec,
+                'auth: ' . $this->auth,
+                'file-id: ' . $file_id,
+                'start-index: ' . $start,
+                'last-index: ' . ($end - 1),
+                'Content-Type: text/plain',
+            ];
+
+            $curl_options = [
+                CURLOPT_URL => $download_url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => $headers,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => '',
+            ];
+
+            $ch = curl_init();
+            curl_setopt_array($ch, $curl_options);
+
+            $attempts = 0;
+            do {
+                $response = curl_exec($ch);
+                $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($status_code === 200) {
+                    fwrite($file_handle, $response);
+                    break;
+                }
+
+                $attempts++;
+
+                if ($attempts <= $max_attempts) {
+                    echo 'Waiting ' . $sleep . ' seconds... Retry ' . $attempts . '/' . $max_attempts . "\n";
+                    sleep($sleep);
+                }
+            } while ($attempts <= $max_attempts);
+
+            if ($status_code !== 200) {
+                fclose($file_handle);
+                unlink($file_name);
+                return ['status' => 'ERROR', 'status_det' => 'Connection error.'];
+            }
+
+            if (is_callable($progress_cb)) {
+                $progress_cb($end, $file_size);
+            }
+        }
+
+        fclose($file_handle);
+
+        return ['status' => 'OK', 'status_det' => 'The download was done successfully.'];
     }
 }

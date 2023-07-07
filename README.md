@@ -71,9 +71,15 @@ $account->sendMessage($object_guid, $text);
 
 $account->votePoll($poll_id, $selection_index);
 
+$account->uploadFile($object_guid, $file_path, $text, $progress_cb);
+
+$account->downloadFile($file_inline, $save_file, $overwrite, $progress_cb);
+
 ```
 ## Example
 * [`parrot.php`](https://github.com/ErfanBahramali/Shad-PHP/blob/main/examples/parrot.php) 
+* [`upload.php`](https://github.com/ErfanBahramali/Shad-PHP/blob/main/examples/upload.php) 
+* [`download.php`](https://github.com/ErfanBahramali/Shad-PHP/blob/main/examples/download.php) 
 
 ## About Us
 This library can be used for easy interaction with Shad just like official applications.
