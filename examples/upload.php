@@ -9,40 +9,42 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ShadPHP\ShadPHP;
 
-//شماره تلفنی که میخواهید با آن لاگین شود را وارد کنید
+// Enter the phone number you want to login with
 $tel_number = 989123456789;
 
-//مسیر و اسم فایل موجود روی دیسک که قصد آپلود دارید
+// The path and name of the file on the disk that you want to upload
 $file_name = './sample.jpg';
 
-//پیام دلخواه که میتوانید مقداری وارد نکنید
+// Optional message that you can not enter a value
 $message = 'سلام';
 
-//ایجاد آبجکت اصلی برنامه
+// Create the main application object
 $account = new ShadPHP($tel_number);
 
-//اندازه تکه‌های دانلود یا آپلود بر حسب بایت است
-//بسته حجم فایل و سرعت شاید عدد متفاوتی بهتر باشد
-//میتوانید مقدار ندهید تا از پیشفرض استفاده کند
+// Size of download or upload chunks in bytes
+// Depending on your file size and speed, a different number may be better.
+// You can not enter a value to use the default value
 $account->chunkSize = 128 * 1024;
 
-//اینجا user_guid اشاره به کاربری که با آن لاگین شده‌اید دارد
-//بنابراین در اینجا فایل در سیو مسیج شما ذخیره میشود
+// user_guid refers to the user you are logged in with
+// So here the file is saved in your Saved Messages
 $to_userid = $account->user_guid;
 
-//کال‌بک عملیات دانلود یا آپلود است که دو مقدار تحویل میدهد:
-//پارامتر اول: مقدار انجام شده بر حسب بایت
-//پارامتر دوم: حجم کل فایل بر حسب بایت
-//استفاده از این کال‌بک اجباری نیست
+/**
+ * Callback of the download or upload operation that delivers two values
+ * @param int $done value done in bytes
+ * @param int $total Total file size in bytes
+ * Using this callback is not mandatory
+ */
 $progress_cb = function ($done, $total) {
     $progress = round(($done / $total) * 100, 2);
     echo "Done: $done bytes | Total: $total bytes | Progress: $progress%\n";
 };
 
-//شروع آپلود فایل
+// Start uploading the file
 $result = $account->uploadFile($to_userid, $file_name, $message, $progress_cb);
 
-//ارور هندلینگ
+// Error handling
 if (isset($result['status']) && $result['status'] === 'OK') {
     echo 'File Uploaded Successfully.' . "\n";
     echo 'Message ID: ' . $result['data']['message_update']['message_id'] . "\n";

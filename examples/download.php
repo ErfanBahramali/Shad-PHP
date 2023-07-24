@@ -9,10 +9,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ShadPHP\ShadPHP;
 
-//شماره تلفنی که میخواهید با آن لاگین شود را وارد کنید
+// Enter the phone number you want to login with
 $tel_number = 989123456789;
 
-//این آرایه را نیاز نیست دستی مقداردهی کنید و در آرایه مسیج میتوانید پیدا کنید
+// You don't need to set this array manually and you can find it in the message array
 $file_inline = [
     'file_id' => 11111111111111,
     'mime' => 'jpg',
@@ -23,34 +23,36 @@ $file_inline = [
     'type' => 'File',
 ];
 
-//ایجاد آبجکت اصلی برنامه
+// Create the main application object
 $account = new ShadPHP($tel_number);
 
-//اندازه تکه‌های دانلود یا آپلود بر حسب بایت است
-//بسته حجم فایل و سرعت شاید عدد متفاوتی بهتر باشد
-//میتوانید مقدار ندهید تا از پیشفرض استفاده کند
+// Size of download or upload chunks in bytes
+// Depending on your file size and speed, a different number may be better.
+// You can not enter a value to use the default value
 $account->chunkSize = 128 * 1024;
 
-//میتوانید اسم فایلی که باید ذخیره شود را تعیین کنید
-//یا خالی بگذارید تا همان اسم اصلی فایل را بگیرید
+// You can specify the name of the file to be saved
+// Or leave it blank to get the same original file name
 $save_file = 'sample_' . time() . '.' . $file_inline['mime'];
 
-//میتوانید تعیین کنید فایل در صورت وجود بازنویسی شود یا خیر
+// You can determine if the file is overwritten or not
 $overwrite = true;
 
-//کال‌بک عملیات دانلود یا آپلود است که دو مقدار تحویل میدهد:
-//پارامتر اول: مقدار انجام شده بر حسب بایت
-//پارامتر دوم: حجم کل فایل بر حسب بایت
-//استفاده از این کال‌بک اجباری نیست
+/**
+ * Callback of the download or upload operation that delivers two values
+ * @param int $done value done in bytes
+ * @param int $total Total file size in bytes
+ * Using this callback is not mandatory
+ */
 $progress_cb = function ($done, $total) {
     $progress = round(($done / $total) * 100, 2);
     echo "Done: $done bytes | Total: $total bytes | Progress: $progress%\n";
 };
 
-//شروع دانلود فایل
+// Start downloading the file
 $result = $account->downloadFile($file_inline, $save_file, $overwrite, $progress_cb);
 
-//ارور هندلینگ
+// Error handling
 if (isset($result['status']) && $result['status'] === 'OK') {
     echo 'File Downloaded Successfully.' . "\n";
 } else {
