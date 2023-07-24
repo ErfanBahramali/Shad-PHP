@@ -251,7 +251,7 @@ class ShadPHP
 
     /** 
      * Login in to account
-     * @return array request response
+     * @return bool logined or not
      */
     public function login()
     {
@@ -285,6 +285,7 @@ class ShadPHP
                 ]);
                 $this->accountInfo = $responseData['user'];
                 $this->registerDevice();
+                return true;
             } else {
                 /* 
                     CodeIsInvalid
