@@ -298,7 +298,7 @@ class ShadPHP
                 }
                 goto getCode;
             }
-        } elseif (!isset($code) || $code == '') {
+        } elseif ($code == '') {
             // for exit and cancel login
             exit();
         } else {
