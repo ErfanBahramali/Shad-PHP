@@ -2,7 +2,7 @@
 
 /**
  * https://github.com/ErfanBahramali/Shad-PHP
- * @Author: Erfan Bahramali (twitter.com/Erfan_Bahramali)
+ * @Author: Erfan Bahramali
  * @Developed: Nabi KaramAliZadeh (twitter.com/NabiKAZ) 
  */
 
