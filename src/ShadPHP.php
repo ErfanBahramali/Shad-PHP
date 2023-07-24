@@ -298,8 +298,9 @@ class ShadPHP
                 }
                 goto getCode;
             }
-        } else if ($code == '') {
-            die;
+        } elseif (!isset($code) || $code == '') {
+            // for exit and cancel login
+            exit();
         } else {
             print_r("Code Is Invalid" . PHP_EOL);
             goto getCode;
