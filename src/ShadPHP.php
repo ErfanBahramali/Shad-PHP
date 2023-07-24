@@ -3,7 +3,7 @@
 /**
  * https://github.com/ErfanBahramali/Shad-PHP
  * @Author: Erfan Bahramali (twitter.com/Erfan_Bahramali)
- * @Developed: Nabi KaramAliZadeh (twitter.com/NabiKAZ) 
+ * @Developed: Nabi KaramAliZadeh (twitter.com/NabiKAZ)
  */
 
 namespace ShadPHP;
