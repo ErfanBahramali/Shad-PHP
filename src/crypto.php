@@ -1,13 +1,13 @@
 <?php
 
 /**
- * https://github.com/ErfanBahramali/Shad-PHP 
+ * https://github.com/ErfanBahramali/Shad-PHP
  */
 namespace ShadPHP;
 
 class crypto
 {
-    /** 
+    /**
      * AES_256_CBC encrypt
      * @param string $text text to encrypt
      * @param string $key key of encrypt
@@ -18,7 +18,7 @@ class crypto
         return base64_encode(openssl_encrypt($text, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, str_repeat(chr(0x0), 16)));
     }
 
-    /** 
+    /**
      * AES_256_CBC encrypt
      * @param string $text text to decrypt
      * @param string $key key of decrypt
@@ -29,7 +29,7 @@ class crypto
         return openssl_decrypt(base64_decode($text), 'aes-256-cbc', $key, OPENSSL_RAW_DATA);
     }
 
-    /** 
+    /**
      * shift text and create new text
      * @param string $text main text
      * @return string shifted text
@@ -53,7 +53,7 @@ class crypto
         return $n;
     }
 
-    /** 
+    /**
      * @param string $text main text
      * @param int $position char position
      * @param string $newChar new character for replace
@@ -65,7 +65,7 @@ class crypto
         return $text;
     }
 
-    /** 
+    /**
      * generate random string
      * @param int $length random string length
      * @return string generated random string

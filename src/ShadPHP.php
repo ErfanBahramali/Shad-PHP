@@ -3,7 +3,7 @@
 /**
  * https://github.com/ErfanBahramali/Shad-PHP
  * @Author: Erfan Bahramali
- * @Developed: Nabi KaramAliZadeh (twitter.com/NabiKAZ) 
+ * @Developed: Nabi KaramAliZadeh (twitter.com/NabiKAZ)
  */
 
 namespace ShadPHP;
@@ -31,7 +31,7 @@ class ShadPHP
     public $sleep = 2;
     public $debug = false;
 
-    /** 
+    /**
      * check account and login
      * @param int $phoneNumber user phone number to login
      */
@@ -52,7 +52,7 @@ class ShadPHP
         }
     }
 
-    /** 
+    /**
      * set datas of config file
      * @param array $datas new datas of config
      * @return bool The function returns the number of bytes that were written to the config file, or false on failure.
@@ -72,7 +72,7 @@ class ShadPHP
         return file_put_contents($this->configFile, base64_encode(json_encode($config)));
     }
 
-    /** 
+    /**
      * load data of config file and set variabels values
      * @return bool true
      */
@@ -110,7 +110,7 @@ class ShadPHP
         return true;
     }
 
-    /** 
+    /**
      * @param string $keyName key of array index to get
      * @return * $keyName index data
      */
@@ -119,11 +119,11 @@ class ShadPHP
         return json_decode(base64_decode(file_get_contents($this->configFile)), true)[$keyName];
     }
 
-    /** 
+    /**
      * send http request to site
      * @param string $url request url
      * @param array $data request payload(data)
-     * @param bool $jsonDecode default json decode result 
+     * @param bool $jsonDecode default json decode result
      * @param bool $setHeader set header or not set header
      * @return array|string if $decode is true return decoded array else return normal response
      */
@@ -160,7 +160,7 @@ class ShadPHP
         return ($jsonDecode) ? json_decode($response, true) : $response;
     }
 
-    /** 
+    /**
      * send option request for before main request
      * @param string $url request url
      * @return int request http code response
@@ -193,8 +193,8 @@ class ShadPHP
         return $httpCode;
     }
 
-    /** 
-     * @param array $data request datas 
+    /**
+     * @param array $data request datas
      * @param bool $setTmpSession if true set tmp_session key name for auth of request else set auth
      * @return array request response
      */
@@ -223,9 +223,9 @@ class ShadPHP
         }
     }
 
-    /** 
+    /**
      * run sendRequest function more comfortable
-     * @param string $method 
+     * @param string $method
      * @param array $input datas
      * @param bool $setTmpSession if true set tmp_session key name for auth of request else set auth
      * @return array request response
@@ -238,8 +238,8 @@ class ShadPHP
         ], $setTmpSession);
     }
 
-    /** 
-     * decrypt request 
+    /**
+     * decrypt request
      * @param string $data_enc request data
      * @param string $auth optional tmpSession or auth of request if empty use this class encryptkey
      * @return string decrypted data as text
@@ -249,7 +249,7 @@ class ShadPHP
         return crypto::aes_256_cbc_decrypt($data_enc, (empty($auth) ? $this->encryptKey : crypto::createSecretPassphrase($auth)));
     }
 
-    /** 
+    /**
      * Login in to account
      * @return bool logined or not
      */
@@ -287,7 +287,7 @@ class ShadPHP
                 $this->registerDevice();
                 return true;
             } else {
-                /* 
+                /*
                     CodeIsInvalid
                     CodeIsExpired
                  */
@@ -317,7 +317,7 @@ class ShadPHP
         return $this->user_guid;
     }
 
-    /** 
+    /**
      * @return int Browser Id code
      */
     public function getBrowserId()
@@ -326,7 +326,7 @@ class ShadPHP
         return '45010078020100101780';
     }
 
-    /** 
+    /**
      * register Device as session
      * @return array response
      */
@@ -343,7 +343,7 @@ class ShadPHP
         ]);
     }
 
-    /** 
+    /**
      * log out of account
      * @return array
      */
@@ -352,7 +352,7 @@ class ShadPHP
         return $this->run('logout');
     }
 
-    /** 
+    /**
      * update $serverInfos value
      */
     public function updateServerInfos()
@@ -373,15 +373,15 @@ class ShadPHP
         return false;
     }
 
-    /** 
-     * update $texts value 
+    /**
+     * update $texts value
      */
     public function updateTexts()
     {
         $this->texts = $this->request('https://web.shad.ir/assets/locales/fa-ir.json?v=3.1.15');
     }
 
-    /** 
+    /**
      * on update call function
      * @param callback $callback function call on update
      */
@@ -429,7 +429,7 @@ class ShadPHP
         }
     }
 
-    /** 
+    /**
      * get all of chats
      * @return array on success return all of chats
      */
@@ -438,7 +438,7 @@ class ShadPHP
         return $this->run('getChats');
     }
 
-    /** 
+    /**
      * get all of chats ads
      * @return array on success return  all of chat ads
      */
@@ -447,7 +447,7 @@ class ShadPHP
         return $this->run('getChatAds');
     }
 
-    /** 
+    /**
      * get new messages
      * @return array
      */
@@ -456,16 +456,16 @@ class ShadPHP
         return $this->run('getChatsUpdates', ['state' => time()]);
     }
 
-    /** 
+    /**
      * get account sessions
-     * @return array 
+     * @return array
      */
     public function getMySessions()
     {
         return $this->run('getMySessions');
     }
 
-    /** 
+    /**
      * @param string $user_guid user_guid of user to get info
      * @return array user info request response
      */
@@ -474,7 +474,7 @@ class ShadPHP
         return $this->run('getUserInfo', ["user_guid" => $user_guid]);
     }
 
-    /** 
+    /**
      * @param string $group group to get info
      * @return array group info request response
      */
@@ -483,7 +483,7 @@ class ShadPHP
         return $this->run('getGroupInfo', ["group_guid" => $group_guid]);
     }
 
-    /** 
+    /**
      * @param string $channel channel to get info
      * @return array channel info request response
      */
@@ -492,7 +492,7 @@ class ShadPHP
         return $this->run('getChannelInfo', ["channel_guid" => $channel_guid]);
     }
 
-    /** 
+    /**
      * @param array $objects_guids
      * @return array
      */
@@ -501,7 +501,7 @@ class ShadPHP
         return $this->run('getAbsObjects', ["objects_guids" => $objects_guids]);
     }
 
-    /** 
+    /**
      * get message interval
      * @param string $object_guid
      * @param int $middle_message_id message id of message
@@ -512,9 +512,9 @@ class ShadPHP
         return $this->run('getMessagesInterval', ['object_guid' => $object_guid, 'middle_message_id' => $middle_message_id]);
     }
 
-    /** 
+    /**
      * get update of messages
-     * @param string $object_guid 
+     * @param string $object_guid
      * @return array
      */
     public function getMessagesUpdates(string $object_guid)
@@ -522,10 +522,10 @@ class ShadPHP
         return $this->run('getMessagesUpdates', ['object_guid' => $object_guid, 'state' => time()]);
     }
 
-    /** 
+    /**
      * get message by filter
      * @param string $object_guid
-     * @param string $sort @example FromMax 
+     * @param string $sort @example FromMax
      * @param string $filter_type type of content @example Media Music Voice File
      * @param int $max_id max message id @example 76213478446577
      * @return array
@@ -538,7 +538,7 @@ class ShadPHP
         return $this->run('getMessages', $input);
     }
 
-    /** 
+    /**
      * get message by message id
      * @param string $object_guid
      * @param array $message_ids
@@ -549,7 +549,7 @@ class ShadPHP
         return $this->run('getMessagesByID', ['object_guid' => $object_guid, 'message_ids' => $message_ids]);
     }
 
-    /** 
+    /**
      * get status of poll
      * @param string $poll_id
      * @return array
@@ -559,16 +559,16 @@ class ShadPHP
         return $this->run('getPollStatus', ['poll_id' => $poll_id]);
     }
 
-    /** 
+    /**
      * @param array $seen_list list of message seened ['object_guid' => 'middle_message_id']
-     * @return array 
+     * @return array
      */
     public function seenChats(array $seen_list)
     {
         return $this->run('seenChats', ['seen_list' => $seen_list]);
     }
 
-    /** 
+    /**
      * search text for a special chat
      * @param string $search_text text for search
      * @param string $type @example Text
@@ -580,8 +580,8 @@ class ShadPHP
         return $this->run('searchChatMessages', ['search_text' => $search_text, 'type' => $type, 'object_guid' => $object_guid]);
     }
 
-    /** 
-     * search text global to find user channel group or ... 
+    /**
+     * search text global to find user channel group or ...
      * @param string $search_text text for search
      * @return array
      */
@@ -590,17 +590,17 @@ class ShadPHP
         return $this->run('searchGlobalObjects', ['search_text' => $search_text]);
     }
 
-    /** 
+    /**
      * @param string $search_text text for search
      * @param string $type @example Text
-     * @return array 
+     * @return array
      */
     public function searchGlobalMessages(string $search_text, string $type)
     {
         return $this->run('searchGlobalMessages', ['search_text' => $search_text, 'type' => $type]);
     }
 
-    /** 
+    /**
      * @param string $object_guid send message to object_guid
      * @param string $text text to send
      * @return array request response
@@ -610,7 +610,7 @@ class ShadPHP
         return $this->run('sendMessage', ['object_guid' => $object_guid, 'rnd' => mt_rand(100000, 999999), 'text' => $text]);
     }
 
-    /** 
+    /**
      * @param string $poll_id
      * @param string $selection_index index of vote
      * @return array request response
@@ -620,9 +620,9 @@ class ShadPHP
         return $this->run('votePoll', ['poll_id' => $poll_id, 'selection_index' => $selection_index]);
     }
 
-    /** 
+    /**
      * Upload File
-     * 
+     *
      * @param string $object_guid The ID of the chat where you want the file to be uploaded.
      * @param string $file_path The Path and file name in local storage.
      * @param string $text (optional) The text for file
@@ -746,11 +746,11 @@ class ShadPHP
         return $this->run('sendMessage', $data);
     }
 
-    /** 
+    /**
      * Download File
      * You don't need to login and enter all the parameters to download!
      * Only these items in the $file_inline array are required: access_hash_rec, dc_id, size
-     * 
+     *
      * @param array $file_inline File specification array including file_id, dc_id, access_hash_rec, etc...
      * @param string $save_file (optional) The name of the file you want to save.
      * @param bool $overwrite (optional) Overwrite status on the file.
