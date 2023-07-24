@@ -24,7 +24,7 @@ class ShadPHP
     private $api_version = '5';
     private $auth;
     private $encryptKey;
-    public $user_guid;
+    private $user_guid;
     public $accountInfo;
     public $chunkSize = 128 * 1024;
     public $maxAttempts = 5;
@@ -305,6 +305,16 @@ class ShadPHP
             print_r("Code Is Invalid" . PHP_EOL);
             goto getCode;
         }
+    }
+
+    /**
+     * get current user_guid
+     * refers to the user you are logged in with
+     * @return string
+     */
+    public function getUserGUID()
+    {
+        return $this->user_guid;
     }
 
     /** 
