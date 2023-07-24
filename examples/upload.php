@@ -10,16 +10,16 @@ require_once __DIR__ . '/vendor/autoload.php';
 use ShadPHP\ShadPHP;
 
 // Enter the phone number you want to login with
-$tel_number = 989123456789;
+$phone_number = 989123456789;
 
 // The path and name of the file on the disk that you want to upload
 $file_name = './sample.jpg';
 
 // Optional message that you can not enter a value
-$message = 'سلام';
+$message = 'Hi';
 
 // Create the main application object
-$account = new ShadPHP($tel_number);
+$account = new ShadPHP($phone_number);
 
 // Size of download or upload chunks in bytes
 // Depending on your file size and speed, a different number may be better.
@@ -28,7 +28,7 @@ $account->chunkSize = 128 * 1024;
 
 // user_guid refers to the user you are logged in with
 // So here the file is saved in your Saved Messages
-$to_userid = $account->user_guid;
+$to_userid = $account->getUserGUID();
 
 /**
  * Callback of the download or upload operation that delivers two values
