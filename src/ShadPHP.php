@@ -2,7 +2,7 @@
 
 /**
  * https://github.com/ErfanBahramali/Shad-PHP
- * @Author: Erfan Bahramali (twitter.com/Erfan_Bahramali)
+ * @Author: Erfan Bahramali
  * @Developed: Nabi KaramAliZadeh (twitter.com/NabiKAZ)
  */
 
@@ -24,7 +24,7 @@ class ShadPHP
     private $api_version = '5';
     private $auth;
     private $encryptKey;
-    public $user_guid;
+    private $user_guid;
     public $accountInfo;
     public $chunkSize = 128 * 1024;
     public $maxAttempts = 5;
@@ -251,7 +251,7 @@ class ShadPHP
 
     /** 
      * Login in to account
-     * @return array request response
+     * @return bool logined or not
      */
     public function login()
     {
@@ -285,6 +285,7 @@ class ShadPHP
                 ]);
                 $this->accountInfo = $responseData['user'];
                 $this->registerDevice();
+                return true;
             } else {
                 /* 
                     CodeIsInvalid
@@ -297,12 +298,23 @@ class ShadPHP
                 }
                 goto getCode;
             }
-        } else if ($code == '') {
-            die;
+        } elseif (!isset($code) || $code == '') {
+            // for exit and cancel login
+            exit();
         } else {
             print_r("Code Is Invalid" . PHP_EOL);
             goto getCode;
         }
+    }
+
+    /**
+     * get current user_guid
+     * refers to the user you are logged in with
+     * @return string
+     */
+    public function getUserGUID()
+    {
+        return $this->user_guid;
     }
 
     /** 
