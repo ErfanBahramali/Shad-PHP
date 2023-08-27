@@ -9,42 +9,42 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use ShadPHP\ShadPHP;
 
-// Enter the phone number you want to login with
+// Enter the phone number you want to login with.
 $phone_number = 989123456789;
 
-// The path and name of the file on the disk that you want to upload
+// The path and name of the file on the disk that you want to upload.
 $file_name = './sample.jpg';
 
-// Optional message that you can not enter a value
+// Optional message. You can leave it blank.
 $message = 'Hi';
 
-// Create the main application object
+// Create the main object of the program.
 $account = new ShadPHP($phone_number);
 
-// Size of download or upload chunks in bytes
-// Depending on your file size and speed, a different number may be better.
-// You can not enter a value to use the default value
+// The size of download or upload chunks is in bytes.
+// Depending on the size of the file and the speed, maybe a different number is better.
+// You can leave the value blank to use the default value.
 $account->chunkSize = 128 * 1024;
 
-// user_guid refers to the user you are logged in with
-// So here the file is saved in your Saved Messages
+// Here "getUserGUID()" refers to the user you are logged in with.
+// So here the file is saved in your Saved Messages.
 $to_userid = $account->getUserGUID();
 
 /**
- * Callback of the download or upload operation that delivers two values
- * @param int $done value done in bytes
- * @param int $total Total file size in bytes
- * Using this callback is not mandatory
+ * Callback of the download or upload operation that delivers two values.
+ * @param int $done Value done in bytes.
+ * @param int $total Total file size in bytes.
+ * Using this callback is not mandatory.
  */
 $progress_cb = function ($done, $total) {
     $progress = round(($done / $total) * 100, 2);
     echo "Done: $done bytes | Total: $total bytes | Progress: $progress%\n";
 };
 
-// Start uploading the file
+// Start uploading the file.
 $result = $account->uploadFile($to_userid, $file_name, $message, $progress_cb);
 
-// Error handling
+// Error handling.
 if (isset($result['status']) && $result['status'] === 'OK') {
     echo 'File Uploaded Successfully.' . "\n";
     echo 'Message ID: ' . $result['data']['message_update']['message_id'] . "\n";
